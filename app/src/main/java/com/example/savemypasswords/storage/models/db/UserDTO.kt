@@ -1,4 +1,4 @@
-package com.example.savemypasswords.storage.models
+package com.example.savemypasswords.storage.models.db
 
 import androidx.room.Dao
 import androidx.room.Delete
@@ -8,20 +8,20 @@ import androidx.room.PrimaryKey
 import androidx.room.Query
 
 @Entity(tableName = "users")
-data class User(
+data class UserDTO(
     @PrimaryKey val login:String,
-    val password:String,
+    val encryptedPassword:String,
+    val encryptedKey:String
 )
 
 @Dao
 interface UsersDao {
     @Query("SELECT * FROM users WHERE login = (:login)")
-    suspend fun getUserByLogin(login: String): User?
+    suspend fun getUserByLogin(login: String): UserDTO?
 
     @Insert
-    suspend fun insertUser(user: User)
+    suspend fun insertUser(user: UserDTO)
 
     @Delete
-    suspend fun deleteUser(user: User)
-
+    suspend fun deleteUser(user: UserDTO)
 }

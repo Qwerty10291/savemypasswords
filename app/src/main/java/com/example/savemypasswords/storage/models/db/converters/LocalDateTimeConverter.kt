@@ -1,4 +1,4 @@
-package com.example.savemypasswords.storage.converters
+package com.example.savemypasswords.storage.models.db.converters
 
 import androidx.room.TypeConverter
 import java.time.LocalDate

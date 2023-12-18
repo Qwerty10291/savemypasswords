@@ -1,30 +1,24 @@
 package com.example.savemypasswords.security
 
-import java.util.Base64
 import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
 object AES256{
-    private val encorder = Base64.getEncoder()
-    private val decorder = Base64.getDecoder()
-
-    private fun cipher(opmode:Int, secretKey:String):Cipher{
+    private fun cipher(opmode:Int, secretKey:ByteArray):Cipher{
         val c = Cipher.getInstance("AES/CBC/PKCS5Padding")
-        val sk = SecretKeySpec(secretKey.toByteArray(Charsets.UTF_8), "AES")
-        val iv = IvParameterSpec(secretKey.substring(0, 16).toByteArray(Charsets.UTF_8))
+        val sk = SecretKeySpec(secretKey, "AES")
+        val iv = IvParameterSpec(secretKey.sliceArray(0..15))
         c.init(opmode, sk, iv)
         return c
     }
 
-    fun encrypt(str:String, secretKey:String):String{
-        val encrypted = cipher(Cipher.ENCRYPT_MODE, secretKey).doFinal(str.toByteArray(Charsets.UTF_8))
-        return String(encorder.encode(encrypted))
+    fun encrypt(data:ByteArray, secretKey:ByteArray):ByteArray{
+        return cipher(Cipher.ENCRYPT_MODE, secretKey).doFinal(data)
     }
 
-    fun decrypt(str:String, secretKey:String):String{
-        val byteStr = decorder.decode(str.toByteArray(Charsets.UTF_8))
-        return String(cipher(Cipher.DECRYPT_MODE, secretKey).doFinal(byteStr))
+    fun decrypt(data:ByteArray, secretKey:ByteArray):ByteArray{
+        return cipher(Cipher.DECRYPT_MODE, secretKey).doFinal(data)
     }
 
 }

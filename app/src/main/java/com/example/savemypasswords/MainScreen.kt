@@ -13,11 +13,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CreditCard
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Devices
 import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Notes
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.Divider
 
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -39,8 +41,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -51,8 +55,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
+import com.example.savemypasswords.screens.CardsList
 import com.example.savemypasswords.screens.Screens
 import com.example.savemypasswords.storage.AppStorage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 import java.time.format.DateTimeFormatter
 
@@ -70,8 +78,14 @@ class MainScreen : NavScreen("main") {
         }
         val currentScreen = when (screenName) {
             Screens.passwordsList.route -> Screens.passwordsList
+            Screens.cardsList.route -> Screens.cardsList
             else -> Screens.passwordsList
         }
+        val selectedIds = remember {
+            mutableStateMapOf<Int, Unit>()
+        }
+
+        val coroutine = rememberCoroutineScope()
 
         Scaffold(
             topBar = {
@@ -101,9 +115,23 @@ class MainScreen : NavScreen("main") {
                     })
             },
             floatingActionButton = {
-                if (currentScreen.floatingAction) {
-                    currentScreen.FloatingButton(viewModel, navController)
+                if (selectedIds.isNotEmpty()) {
+                    FloatingActionButton(contentColor = Color.Red, onClick = {
+                        coroutine.launch {
+                            withContext(Dispatchers.IO) {
+                                selectedIds.keys.forEach { viewModel.deleteItem(it) }
+                                selectedIds.clear()
+                            }
+                        }
+                    }) {
+                        Icon(imageVector = Icons.Outlined.Delete, contentDescription = "Add")
+                    }
+                } else {
+                    if (currentScreen.floatingAction) {
+                        currentScreen.FloatingButton(viewModel, navController)
+                    }
                 }
+
             },
             bottomBar = {
                 NavigationBar {
@@ -118,8 +146,8 @@ class MainScreen : NavScreen("main") {
                         },
                         label = { Text("passwords") })
                     NavigationBarItem(
-                        selected = false,
-                        onClick = {},
+                        selected = screenName == Screens.cardsList.route,
+                        onClick = {screenName = Screens.cardsList.route},
                         icon = {
                             Icon(
                                 Icons.Filled.CreditCard,
@@ -148,7 +176,8 @@ class MainScreen : NavScreen("main") {
                 storage = viewModel,
                 navController = navController,
                 padding = innerPadding,
-                searchQuery = searchQuery
+                searchQuery = searchQuery,
+                selectedIds
             )
         }
     }

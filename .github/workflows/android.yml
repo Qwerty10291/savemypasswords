@@ -1,0 +1,37 @@
+name: build app
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up JDK
+      uses: actions/setup-java@v2
+      with:
+        distribution: 'adopt'
+        java-version: '17'
+
+    - name: Build with Gradle
+      run: ./gradlew assembleRelease
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ github.event.repository.releases[0].upload_url }}
+        asset_path: app/build/outputs/apk/release/app-release.apk
+        asset_name: MyApp-release.apk
+        asset_content_type: application/vnd.android.package-archive
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

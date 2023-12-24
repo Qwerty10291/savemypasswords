@@ -4,7 +4,9 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import java.time.LocalDate
 
+@Serializable
 data class Note(
+    val header:String,
     val content:String,
     @Serializable(with = LocalDateSerializer::class)
     val created: LocalDate,

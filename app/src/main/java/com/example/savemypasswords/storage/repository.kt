@@ -2,8 +2,8 @@ package com.example.savemypasswords.storage
 
 import android.content.Context
 import androidx.room.Room
-import com.example.savemypasswords.storage.models.db.ItemDTO
 import com.example.savemypasswords.storage.models.db.ItemDAO
+import com.example.savemypasswords.storage.models.db.ItemDTO
 import com.example.savemypasswords.storage.models.db.UserDTO
 import com.example.savemypasswords.storage.models.db.UsersDao
 import kotlinx.coroutines.flow.Flow
@@ -56,6 +56,10 @@ class PasswordsRepo private constructor(context: Context) {
 
     suspend fun newNote(userLogin: String, data:String) {
         passwordsDao.addItem(ItemDTO(userLogin, "note", data))
+    }
+
+    suspend fun updateNote(userLogin: String, id:Int, data:String) {
+        passwordsDao.updateItem(ItemDTO(userLogin, "note", data, id))
     }
 
     suspend fun deleteId(id:Int) {

@@ -1,20 +1,23 @@
 package com.example.savemypasswords.storage
 
 import androidx.lifecycle.ViewModel
-import com.example.savemypasswords.screens.PasswordsList
 import com.example.savemypasswords.security.AES256
 import com.example.savemypasswords.security.BCRYPT
 import com.example.savemypasswords.security.sha256
 import com.example.savemypasswords.storage.models.db.UserDTO
-import com.example.savemypasswords.storage.models.dto.*
+import com.example.savemypasswords.storage.models.dto.Card
+import com.example.savemypasswords.storage.models.dto.Identifiable
+import com.example.savemypasswords.storage.models.dto.Note
+import com.example.savemypasswords.storage.models.dto.Password
+import com.example.savemypasswords.storage.models.dto.User
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.transform
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.security.SecureRandom
 import java.time.LocalDate
 import java.util.Base64
-import kotlin.io.encoding.ExperimentalEncodingApi
 
 
 class AppStorage(): ViewModel() {
@@ -32,12 +35,12 @@ class AppStorage(): ViewModel() {
     }
 
     private inline fun <reified T:Identifiable> itemsList(name:String): Flow<List<T>> {
-        return repository.getItems(currentUser.login, name).transform {pswds ->
-            emit(pswds.map {pswd ->
-                val decrypted = AES256.decrypt(Base64.getDecoder().decode(pswd.data), currentUser.key)
-                val password = Json.decodeFromString<T>(decrypted.toString(charset = Charsets.UTF_8))
-                password.id = pswd.id
-                password
+        return repository.getItems(currentUser.login, name).transform {items ->
+            emit(items.map {item ->
+                val decrypted = AES256.decrypt(Base64.getDecoder().decode(item.data), currentUser.key)
+                val item = Json.decodeFromString<T>(decrypted.toString(charset = Charsets.UTF_8))
+                item.id = item.id
+                item
             } )
         }
     }
@@ -85,6 +88,30 @@ class AppStorage(): ViewModel() {
         repository.updatePassword(currentUser.login, pswd.id, Base64.getEncoder().encodeToString(encrypted))
     }
 
+    suspend fun NewCard(number:String, expirity:String, cvc:String, holder:String) {
+        val data = Json.encodeToString(Card(number, expirity, cvc, holder));
+        val encrypted = AES256.encrypt(data.toByteArray(), currentUser.key)
+        repository.newCard(currentUser.login, Base64.getEncoder().encodeToString(encrypted))
+    }
+
+    suspend fun UpdateCard(card:Card)  {
+        val data = Json.encodeToString(card)
+        val encrypted = AES256.encrypt(data.toByteArray(), currentUser.key)
+        repository.updateCard(currentUser.login, card.id, Base64.getEncoder().encodeToString(encrypted))
+    }
+
+    suspend fun NewNote(header:String, content:String) {
+        val data = Json.encodeToString(Note(header, content, LocalDate.now()));
+        val encrypted = AES256.encrypt(data.toByteArray(), currentUser.key)
+        repository.newNote(currentUser.login, Base64.getEncoder().encodeToString(encrypted))
+    }
+
+    suspend fun UpdateNote(note:Note) {
+        val data = Json.encodeToString(note);
+        val encrypted = AES256.encrypt(data.toByteArray(), currentUser.key)
+        repository.updateNote(currentUser.login, note.id, Base64.getEncoder().encodeToString(encrypted))
+    }
+
     suspend fun deleteItem(id:Int) {
         repository.deleteId(id)
     }
@@ -93,5 +120,16 @@ class AppStorage(): ViewModel() {
         passwords = itemsList("password")
         cards = itemsList("card")
         notes = itemsList("note")
+    }
+
+    fun passwordsFiltered(query:String):Flow<List<Password>> {
+        return passwords.map { it -> it.filter { it.login.contains(query) || it.site.contains(query) || it.comment.contains(query)} }
+    }
+    fun cardsFiltered(query:String):Flow<List<Card>> {
+        return cards.map { it -> it.filter { it.number.contains(query) } }
+    }
+
+    fun notesFiltered(query:String):Flow<List<Note>> {
+        return notes.map { it -> it.filter { it.header.lowercase().contains(query.lowercase()) } }
     }
 }

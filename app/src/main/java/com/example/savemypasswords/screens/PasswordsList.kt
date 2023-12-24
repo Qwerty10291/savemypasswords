@@ -50,7 +50,7 @@ class PasswordsList():Screen( "passwords_list",true, true) {
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
     override fun Draw(storage: AppStorage, navController: NavHostController, padding: PaddingValues, searchQuery:String, selected:SnapshotStateMap<Int, Unit>) {
-        val passwords by storage.passwords.collectAsState(emptyList())
+        val passwords by (if (searchQuery.isNotEmpty()) storage.passwordsFiltered(searchQuery) else storage.passwords).collectAsState(emptyList())
         val clipboardManager: ClipboardManager = LocalClipboardManager.current
         val context = LocalContext.current
         LazyColumn(

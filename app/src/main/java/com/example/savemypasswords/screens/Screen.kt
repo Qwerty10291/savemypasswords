@@ -17,4 +17,5 @@ abstract class Screen(val route:String, val floatingAction:Boolean = false, val 
 object Screens {
     val passwordsList = PasswordsList()
     val cardsList = CardsList()
+    val notesList = NotesList()
 }

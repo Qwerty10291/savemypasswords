@@ -94,7 +94,7 @@ class MainScreen : NavScreen("main") {
                     FloatingActionButton(contentColor = Color.Red, onClick = {
                         coroutine.launch {
                             withContext(Dispatchers.IO) {
-                                selectedIds.keys.forEach { viewModel.deleteItem(it) }
+                                selectedIds.keys.forEach {viewModel.deleteItem(it)}
                                 selectedIds.clear()
                             }
                         }
@@ -115,7 +115,6 @@ class MainScreen : NavScreen("main") {
                         onClick = {
                             screenName = Screens.passwordsList.route
                             searchQuery = ""
-                            selectedIds.clear()
                         },
                         icon = {
                             Icon(
@@ -129,7 +128,6 @@ class MainScreen : NavScreen("main") {
                         onClick = {
                             screenName = Screens.cardsList.route
                             searchQuery = ""
-                            selectedIds.clear()
                         },
                         icon = {
                             Icon(
@@ -142,7 +140,6 @@ class MainScreen : NavScreen("main") {
                         onClick = {
                             screenName = Screens.notesList.route
                             searchQuery = ""
-                            selectedIds.clear()
                         },
                         icon = {
                             Icon(

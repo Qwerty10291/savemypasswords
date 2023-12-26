@@ -40,8 +40,6 @@ interface ItemDAO
     @Insert
     suspend fun addItem(item:ItemDTO)
 
-
-
-    @Delete
-    suspend fun deleteItem(item: ItemDTO)
+    @Query("delete from items where id = (:id)")
+    suspend fun deleteItem(id:Int)
 }

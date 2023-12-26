@@ -63,7 +63,7 @@ class PasswordsRepo private constructor(context: Context) {
     }
 
     suspend fun deleteId(id:Int) {
-        passwordsDao.deleteItem(ItemDTO("", "", "", id))
+        passwordsDao.deleteItem(id)
     }
 
     companion object {

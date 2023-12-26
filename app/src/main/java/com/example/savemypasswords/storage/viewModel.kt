@@ -36,10 +36,10 @@ class AppStorage(): ViewModel() {
 
     private inline fun <reified T:Identifiable> itemsList(name:String): Flow<List<T>> {
         return repository.getItems(currentUser.login, name).transform {items ->
-            emit(items.map {item ->
-                val decrypted = AES256.decrypt(Base64.getDecoder().decode(item.data), currentUser.key)
+            emit(items.map {itemEnc ->
+                val decrypted = AES256.decrypt(Base64.getDecoder().decode(itemEnc.data), currentUser.key)
                 val item = Json.decodeFromString<T>(decrypted.toString(charset = Charsets.UTF_8))
-                item.id = item.id
+                item.id = itemEnc.id
                 item
             } )
         }
